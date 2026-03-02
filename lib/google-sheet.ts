@@ -3,11 +3,13 @@ import { google } from "googleapis";
 export async function getSecurityNiks(sheetname: "MORPHO" | "BIOSTAR"){
   try {
 
-    const decodedPrivateKey = process.env.GOOGLE_PRIVATE_KEY ? Buffer.from(process.env.GOOGLE_PRIVATE_KEY, 'base64').toString('utf-8') : undefined;
+    // const decodedPrivateKey = process.env.GOOGLE_PRIVATE_KEY ? Buffer.from(process.env.GOOGLE_PRIVATE_KEY, 'base64').toString('utf-8') : undefined;
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: decodedPrivateKey,
+        private_key: process.env.GOOGLE_PRIVATE_KEY
+          ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n").replace(/^"|"$/g, "")
+          : undefined,
       },
       scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"]
     });
