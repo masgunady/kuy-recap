@@ -1,6 +1,7 @@
 "use server";
 
 import Papa from "papaparse";
+import { getSecurityNiks } from '@/lib/google-sheet'
 
 export async function processFrCsv(formData: FormData) {
   const file = formData.get("file") as File;
@@ -8,6 +9,9 @@ export async function processFrCsv(formData: FormData) {
   if (!file) {
     return { success: false, error: "File tidak ditemukan" };
   }
+
+  const securityNiksArray = await getSecurityNiks("MORPHO");
+  const validSecurityNiks = new Set(securityNiksArray);
 
   // Membaca file sebagai string untuk di-parse
   const fileText = await file.text();
@@ -48,6 +52,13 @@ export async function processFrCsv(formData: FormData) {
   // 3. Rekap Total
   const totalKaryawan = uniqueNiks.size;
 
+  let totalKaryawanPengamanan = 0;
+  uniqueNiks.forEach((nik) => {
+    if(validSecurityNiks.has(nik)){
+      totalKaryawanPengamanan++
+    }
+  })
+
   // Format ke bentuk Array Object untuk di-render oleh tabel shadcn/ui
   const doorStats = Object.keys(doorMap)
     .map((door) => ({
@@ -59,6 +70,7 @@ export async function processFrCsv(formData: FormData) {
   return {
     success: true,
     totalKaryawan,
+    totalKaryawanPengamanan,
     totalRawRows: rawData.length,
     doorStats,
     previewData: readerIn.slice(0, 5), // Kirim 5 baris pertama sebagai preview tabel

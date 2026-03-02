@@ -1,6 +1,7 @@
 "use server";
 
 import Papa from "papaparse";
+import { getSecurityNiks } from "@/lib/google-sheet";
 
 export async function processBiostarCsv(formData: FormData) {
   const file = formData.get("file") as File;
@@ -8,6 +9,9 @@ export async function processBiostarCsv(formData: FormData) {
   if (!file) {
     return { success: false, error: "File tidak ditemukan" };
   }
+
+  const securityNiksArray = await getSecurityNiks("BIOSTAR");
+  const validSecurityNiks = new Set(securityNiksArray);
 
   const fileText = await file.text();
 
@@ -62,6 +66,13 @@ export async function processBiostarCsv(formData: FormData) {
   // 3. Rekap Total
   const totalKaryawan = uniqueNiks.size;
 
+  let totalKaryawanPengamanan = 0;
+  uniqueNiks.forEach((nik) => {
+    if (validSecurityNiks.has(nik)) {
+      totalKaryawanPengamanan++;
+    }
+  });
+
   // Format array object & Sort dari A-Z berdasarkan Nama Pintu
   const doorStats = Object.keys(doorMap)
     .map((door) => ({
@@ -83,6 +94,7 @@ export async function processBiostarCsv(formData: FormData) {
   return {
     success: true,
     totalKaryawan,
+    totalKaryawanPengamanan,
     totalRawRows: rawData.length,
     doorStats,
     previewData,
