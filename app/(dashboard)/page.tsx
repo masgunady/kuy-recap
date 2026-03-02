@@ -24,6 +24,7 @@ import {
 
 type StatsType = {
   totalKaryawan: number;
+  totalKaryawanPengamanan: number;
   totalRawRows: number;
   doorStats: { doorName: string; total: number }[];
   previewData: Record<string, string>[];
@@ -51,6 +52,7 @@ export default function Home() {
       if (result.success) {
         setStats({
           totalKaryawan: result.totalKaryawan!,
+          totalKaryawanPengamanan: result.totalKaryawanPengamanan!,
           totalRawRows: result.totalRawRows!,
           doorStats: result.doorStats!,
           previewData: result.previewData!,
@@ -80,14 +82,26 @@ export default function Home() {
               Upload Data Absensi FR
             </CardTitle>
             {fileName ? (
-              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-cyan-50 p-2 rounded-md border border-cyan-100">
-                <FileText className="h-4 w-4 text-cyan-500" />
-                <span
-                  className="truncate flex-1 font-medium text-slate-700"
-                  title={fileName}
-                >
-                  {fileName}
-                </span>
+              <div>
+                <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-cyan-50 p-2 rounded-md border border-cyan-100">
+                  <FileText className="h-4 w-4 text-cyan-500" />
+                  <span
+                    className="truncate flex-1 font-medium text-slate-700"
+                    title={fileName}
+                  >
+                    {fileName}
+                  </span>
+                </div>
+                              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-orange-50 p-2 rounded-md border border-orange-100">
+                  <Activity className="h-4 w-4 text-cyan-500" />
+                  <span
+                    className="truncate flex-1 font-medium text-slate-700"
+                    title={stats ? stats.totalRawRows.toLocaleString() : "0"}
+
+                  >
+                  Terdapat {stats ? stats.totalRawRows.toLocaleString() : "0"} Baris data dibaca sistem
+                  </span>
+                </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground mt-1">
@@ -119,11 +133,6 @@ export default function Home() {
                   disabled={isPending}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-20 file:cursor-pointer"
                 />
-                {/* <p className="text-sm font-medium text-cyan-600 text-center mt-2">
-                  {isPending
-                    ? "Sedang memproses di Server..."
-                    : "Klik atau Drop file FR (.csv)"}
-                </p> */}
               </div>
             </div>
           </CardContent>
@@ -134,16 +143,16 @@ export default function Home() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Card className="bg-cyan-500 text-white shadow-sm">
               <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium uppercase opacity-90">
-                  Total Karyawan In/Masuk (Unik)
+                <CardTitle className="text-sm font-semibold uppercase opacity-90">
+                  Total Pegawai In/Masuk (Unik)
                 </CardTitle>
                 <Users className="h-4 w-4 opacity-70" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl md:text-3xl font-bold">
-                  {stats ? stats.totalKaryawan.toLocaleString() : "0"}
+                  {stats ? stats.totalKaryawan.toLocaleString() : "0"} <span className="text-xl font-semibold">Pegawai</span>
                 </div>
-                <p className="text-xs opacity-75 mt-1">
+                <p className="text-xs mt-1">
                   Setelah hapus anomali / duplikasi (Double Entry)
                 </p>
               </CardContent>
@@ -151,17 +160,17 @@ export default function Home() {
 
             <Card className="border-cyan-100 shadow-sm">
               <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-medium uppercase text-muted-foreground">
-                  Total Baris Raw Data
+                <CardTitle className="text-sm font-semibold uppercase text-muted-foreground">
+                  Divisi Pengamanan
                 </CardTitle>
-                <Activity className="h-4 w-4 text-cyan-500" />
+                <CheckSquare className="h-4 w-4 text-cyan-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-cyan-600">
-                  {stats ? stats.totalRawRows.toLocaleString() : "0"}
+                    {stats ? stats.totalKaryawanPengamanan.toLocaleString() : "0"} <span className="text-xl font-semibold">Personil</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Baris transaksi dibaca sistem
+                  Sesuai Database G-Sheets
                 </p>
               </CardContent>
             </Card>

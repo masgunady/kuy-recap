@@ -24,6 +24,7 @@ import {
 
 type StatsType = {
   totalKaryawan: number;
+  totalKaryawanPengamanan: number;
   totalRawRows: number;
   doorStats: { doorName: string; total: number }[];
   previewData: Record<string, string>[];
@@ -49,6 +50,7 @@ export default function BiostarPage() {
       if (result.success) {
         setStats({
           totalKaryawan: result.totalKaryawan!,
+          totalKaryawanPengamanan: result.totalKaryawanPengamanan!,
           totalRawRows: result.totalRawRows!,
           doorStats: result.doorStats!,
           previewData: result.previewData!,
@@ -78,14 +80,26 @@ export default function BiostarPage() {
               Upload Data Absensi Tap Card
             </CardTitle>
             {fileName ? (
-              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-teal-50 p-2 rounded-md border border-teal-100">
-                <FileText className="h-4 w-4 text-teal-500" />
-                <span
-                  className="truncate flex-1 font-medium text-slate-700"
-                  title={fileName}
-                >
-                  {fileName}
-                </span>
+              <div>
+                <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-cyan-50 p-2 rounded-md border border-cyan-100">
+                  <FileText className="h-4 w-4 text-cyan-500" />
+                  <span
+                    className="truncate flex-1 font-medium text-slate-700"
+                    title={fileName}
+                  >
+                    {fileName}
+                  </span>
+                </div>
+                              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-orange-50 p-2 rounded-md border border-orange-100">
+                  <Activity className="h-4 w-4 text-cyan-500" />
+                  <span
+                    className="truncate flex-1 font-medium text-slate-700"
+                    title={stats ? stats.totalRawRows.toLocaleString() : "0"}
+
+                  >
+                  Terdapat {stats ? stats.totalRawRows.toLocaleString() : "0"} Baris data dibaca sistem
+                  </span>
+                </div>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground mt-1">
@@ -126,16 +140,16 @@ export default function BiostarPage() {
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             <Card className="bg-teal-500 text-white shadow-sm w-full">
               <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-xs md:text-sm font-medium uppercase opacity-90">
+                <CardTitle className="text-xs md:text-sm font-semibold uppercase">
                   Karyawan Masuk (Unik)
                 </CardTitle>
                 <Users className="h-4 w-4 opacity-70" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl md:text-3xl font-bold">
-                  {stats ? stats.totalKaryawan.toLocaleString() : "0"}
+                  {stats ? stats.totalKaryawan.toLocaleString() : "0"} <span className="text-xl font-semibold">Pegawai</span>
                 </div>
-                <p className="text-[10px] md:text-xs opacity-75 mt-1">
+                <p className="text-[10px] md:text-xs mt-1">
                   Setelah hapus duplikasi & status valid
                 </p>
               </CardContent>
@@ -143,17 +157,17 @@ export default function BiostarPage() {
 
             <Card className="border-teal-100 shadow-sm w-full">
               <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-xs md:text-sm font-medium uppercase text-muted-foreground">
-                  Total Baris Raw
+                <CardTitle className="text-xs md:text-sm font-semibold uppercase text-muted-foreground">
+                  Divisi Pengamanan
                 </CardTitle>
-                <Activity className="h-4 w-4 text-teal-500" />
+                <CheckSquare className="h-4 w-4 text-teal-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl md:text-3xl font-bold text-teal-600">
-                  {stats ? stats.totalRawRows.toLocaleString() : "0"}
+                  {stats ? stats.totalKaryawanPengamanan.toLocaleString() : "0"} <span className="text-xl font-semibold">Personil</span>
                 </div>
                 <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
-                  Seluruh baris transaksi (No Filter)
+                  Sesuai Database G-Sheets
                 </p>
               </CardContent>
             </Card>
