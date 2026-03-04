@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { processFrCsv } from "@/app/actions/fr-actions";
+import { processCombinedCsv } from "@/app/actions/cross-action"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -13,223 +13,241 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  UploadCloud,
-  Users,
-  CheckSquare,
-  Activity,
-  Loader2,
-  FileText,
-} from "lucide-react";
+import { Users, CheckSquare, Loader2, FileText, Layers, UploadCloud, MapPin } from "lucide-react";
 
-type StatsType = {
-  totalKaryawan: number;
-  totalKaryawanPengamanan: number;
-  totalRawRows: number;
-  doorStats: { doorName: string; total: number }[];
-  previewData: Record<string, string>[];
+// Tipe data yang disesuaikan dengan output terbaru dari Server Action
+type CombinedStatsType = {
+  totalHadir: number;
+  hadirJakarta: number;
+  hadirKarawang: number;
+  totalSecurity: number;
+  securityJakarta: number;
+  securityKarawang: number;
+  lineStats: { lineName: string; total: number }[];
 };
 
-export default function Home() {
+export default function KonsolidasiPage() {
   const [isPending, startTransition] = useTransition();
-  const [stats, setStats] = useState<StatsType | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [stats, setStats] = useState<CombinedStatsType | null>(null);
+  
+  // State untuk menampung kedua file
+  const [fileFr, setFileFr] = useState<File | null>(null);
+  const [fileBiostar, setFileBiostar] = useState<File | null>(null);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleProcess = () => {
+    if (!fileFr || !fileBiostar) return;
 
-    setFileName(file.name);
-
-    // Persiapkan data file ke form-data untuk Server Action
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("fileFr", fileFr);
+    formData.append("fileBiostar", fileBiostar);
 
-    // Jalankan Server Action
     startTransition(async () => {
-      const result = await processFrCsv(formData);
-
-      if (result.success) {
-        setStats({
-          totalKaryawan: result.totalKaryawan!,
-          totalKaryawanPengamanan: result.totalKaryawanPengamanan!,
-          totalRawRows: result.totalRawRows!,
-          doorStats: result.doorStats!,
-          previewData: result.previewData!,
-        });
+      const result = await processCombinedCsv(formData);
+      
+      if (result.success && result.stats) {
+        // Menyimpan seluruh object stats dari server
+        setStats(result.stats);
       } else {
-        console.error("Gagal memproses file", result.error);
-        setFileName(null);
+        console.error("Gagal memproses file gabungan", result.error);
+        alert(result.error || "Terjadi kesalahan saat memproses data.");
       }
     });
-
-    e.target.value = ""; // Reset input
   };
 
   return (
     <main className="flex-1 space-y-6 md:space-y-8 p-4 md:p-8 pt-6 w-full max-w-7xl mx-auto overflow-x-hidden">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-          Kuy<span className="text-cyan-500">ReCap</span> (FR Mode)
+          Ri<span className="text-sky-500">Cap</span> (Cross-System)
         </h2>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-7">
-        {/* INPUT SECTION */}
-        <Card className="md:col-span-3 border-cyan-100 shadow-sm h-fit">
+      <div className="grid gap-6 md:grid-cols-2 w-full">
+        {/* INPUT: FILE FR */}
+        <Card className="border-sky-100 shadow-sm w-full h-fit">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base md:text-lg">
-              Upload Data Absensi FR
+            <CardTitle className="text-base md:text-lg flex items-center gap-2">
+              <span className="bg-cyan-100 text-cyan-700 px-2 py-1 rounded text-xs">Mesin 1</span>
+              Data Absensi FR
             </CardTitle>
-            {fileName ? (
-              <div>
-                <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-cyan-50 p-2 rounded-md border border-cyan-100">
-                  <FileText className="h-4 w-4 text-cyan-500" />
-                  <span
-                    className="truncate flex-1 font-medium text-slate-700"
-                    title={fileName}
-                  >
-                    {fileName}
-                  </span>
-                </div>
-                              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-orange-50 p-2 rounded-md border border-orange-100">
-                  <Activity className="h-4 w-4 text-cyan-500" />
-                  <span
-                    className="truncate flex-1 font-medium text-slate-700"
-                    title={stats ? stats.totalRawRows.toLocaleString() : "0"}
-
-                  >
-                  Terdapat {stats ? stats.totalRawRows.toLocaleString() : "0"} Baris data dibaca sistem
-                  </span>
-                </div>
+            {fileFr ? (
+              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-sky-50 p-2 rounded-md border border-sky-100">
+                <FileText className="h-4 w-4 text-sky-500" />
+                <span className="truncate flex-1 font-medium text-slate-700">{fileFr.name}</span>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground mt-1">
-                Belum ada file yang dipilih
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">Belum ada file FR</p>
             )}
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>File CSV</Label>
-              <div className="group relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-cyan-200 p-6 md:p-8 transition-colors hover:bg-cyan-50/50 w-full min-h-[160px] text-center overflow-hidden">
-                <div className="flex flex-col items-center justify-center pointer-events-none z-10">
-                  {isPending ? (
-                    <Loader2 className="mb-2 h-8 w-8 text-cyan-400 animate-spin" />
-                  ) : (
-                    <UploadCloud className="mb-2 h-8 w-8 text-cyan-400 group-hover:scale-110 transition-transform duration-200" />
-                  )}
-                  <p className="text-xs md:text-sm font-medium text-cyan-600 text-center mt-2 px-2">
-                    {isPending
-                      ? "Sedang memproses di Server..."
-                      : "Klik atau Drop file FR (.csv)"}
-                  </p>
-                </div>
-
-                <Input
-                  type="file"
-                  accept=".csv"
-                  onChange={handleFileUpload}
-                  disabled={isPending}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-20 file:cursor-pointer"
-                />
+          <CardContent>
+            <div className="group relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-sky-200 p-6 transition-colors hover:bg-sky-50/50 w-full min-h-[120px] text-center overflow-hidden">
+              <div className="flex flex-col items-center justify-center pointer-events-none z-10">
+                <UploadCloud className="mb-2 h-6 w-6 text-sky-400 group-hover:scale-110 transition-transform duration-200" />
+                <p className="text-xs font-medium text-sky-600">Klik / Drop file FR (.csv)</p>
               </div>
+              <Input
+                type="file"
+                accept=".csv"
+                onChange={(e) => setFileFr(e.target.files?.[0] || null)}
+                disabled={isPending}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-20 file:cursor-pointer"
+              />
             </div>
           </CardContent>
         </Card>
 
-        {/* REKAP SECTION */}
-        <div className="md:col-span-4 space-y-4 min-w-0 w-full">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Card className="bg-cyan-500 text-white shadow-sm">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-semibold uppercase opacity-90">
-                  Total Pegawai In/Masuk (Unik)
-                </CardTitle>
-                <Users className="h-4 w-4 opacity-70" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl md:text-3xl font-bold">
-                  {stats ? stats.totalKaryawan.toLocaleString() : "0"} <span className="text-xl font-semibold">Pegawai</span>
-                </div>
-                <p className="text-xs mt-1">
-                  Setelah hapus anomali / duplikasi (Double Entry)
-                </p>
-              </CardContent>
-            </Card>
+        {/* INPUT: FILE BIOSTAR */}
+        <Card className="border-sky-100 shadow-sm w-full h-fit">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base md:text-lg flex items-center gap-2">
+              <span className="bg-teal-100 text-teal-700 px-2 py-1 rounded text-xs">Mesin 2</span>
+              Data Absensi Biostar
+            </CardTitle>
+            {fileBiostar ? (
+              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-sky-50 p-2 rounded-md border border-sky-100">
+                <FileText className="h-4 w-4 text-sky-500" />
+                <span className="truncate flex-1 font-medium text-slate-700">{fileBiostar.name}</span>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground mt-1">Belum ada file Biostar</p>
+            )}
+          </CardHeader>
+          <CardContent>
+            <div className="group relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-sky-200 p-6 transition-colors hover:bg-sky-50/50 w-full min-h-[120px] text-center overflow-hidden">
+              <div className="flex flex-col items-center justify-center pointer-events-none z-10">
+                <UploadCloud className="mb-2 h-6 w-6 text-sky-400 group-hover:scale-110 transition-transform duration-200" />
+                <p className="text-xs font-medium text-sky-600">Klik / Drop file Biostar (.csv)</p>
+              </div>
+              <Input
+                type="file"
+                accept=".csv"
+                onChange={(e) => setFileBiostar(e.target.files?.[0] || null)}
+                disabled={isPending}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-20 file:cursor-pointer"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-            <Card className="border-cyan-100 shadow-sm">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-semibold uppercase text-muted-foreground">
-                  Divisi Pengamanan
-                </CardTitle>
-                <CheckSquare className="h-4 w-4 text-cyan-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-cyan-600">
-                    {stats ? stats.totalKaryawanPengamanan.toLocaleString() : "0"} <span className="text-xl font-semibold">Personil</span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Sesuai Database G-Sheets
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+      {/* TOMBOL PROSES */}
+      <div className="flex justify-center w-full my-6">
+        <Button 
+          onClick={handleProcess} 
+          disabled={!fileFr || !fileBiostar || isPending}
+          size="lg"
+          className="bg-sky-600 hover:bg-sky-700 text-white w-full md:w-1/3 shadow-md h-12 text-md"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Menyatukan Data...
+            </>
+          ) : (
+            <>
+              <Layers className="mr-2 h-5 w-5" />
+              Proses Rekap Data
+            </>
+          )}
+        </Button>
+      </div>
 
-          {/* TABEL REKAP PER-DOOR */}
-          <Card className="border-cyan-100 shadow-sm">
-            <CardHeader className="border-b bg-slate-50/50 py-3">
-              <CardTitle className="text-xs flex items-center gap-2">
-                <CheckSquare className="h-4 w-4 text-cyan-500" />
-                Rekap Jumlah Karyawan Per-DOOR
+      {/* AREA HASIL REKAPITULASI */}
+      {stats && (
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          
+          {/* CARD 1: TOTAL SELURUH KARYAWAN */}
+          <Card className="bg-cyan-500 text-white shadow-sm w-full">
+            <CardHeader className="pb-2 border-b border-cyan-400/30">
+              <CardTitle className="text-sm font-semibold uppercase flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Total Pegawai In/Masuk
+                </span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="max-h-[350px] overflow-auto relative w-full">
-                {stats && stats.doorStats.length > 0 ? (
-                  <Table>
-                    <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
-                      <TableRow>
-                        <TableHead className="text-xs font-semibold w-12 text-center">
-                          No
-                        </TableHead>
-                        <TableHead className="text-xs font-semibold">
-                          Perangkat (DOOR)
-                        </TableHead>
-                        <TableHead className="text-xs font-semibold text-center">
-                          Jumlah Karyawan
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {stats.doorStats.map((door, i) => (
-                        <TableRow
-                          key={door.doorName}
-                          className="hover:bg-cyan-50/30"
-                        >
-                          <TableCell className="text-xs text-center text-muted-foreground">
-                            {i + 1}
-                          </TableCell>
-                          <TableCell className="text-xs font-medium text-slate-700">
-                            {door.doorName}
-                          </TableCell>
-                          <TableCell className="text-xs text-center text-cyan-600 font-bold">
-                            {door.total}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <div className="p-10 text-center text-muted-foreground italic text-sm">
-                    Silakan upload file untuk melihat data perangkat.
-                  </div>
-                )}
+            <CardContent className="pt-4">
+              <div className="text-4xl font-bold mb-4">
+                {stats.totalHadir.toLocaleString()} <span className="text-sm font-normal opacity-75">Orang</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 bg-cyan-600/50 p-3 rounded-lg text-sm">
+                <div>
+                  <div className="opacity-75 mb-1 flex items-center gap-1"><MapPin className="h-3 w-3"/> Lokasi Jakarta</div>
+                  <div className="font-bold text-xl">{stats.hadirJakarta.toLocaleString()}</div>
+                </div>
+                <div>
+                  <div className="opacity-75 mb-1 flex items-center gap-1"><MapPin className="h-3 w-3"/> Lokasi Karawang</div>
+                  <div className="font-bold text-xl">{stats.hadirKarawang.toLocaleString()}</div>
+                </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* CARD 2: TOTAL DIVISI PENGAMANAN */}
+          <Card className="bg-teal-500 text-white shadow-sm w-full">
+            <CardHeader className="pb-2 border-b border-teal-400/30">
+              <CardTitle className="text-sm font-semibold uppercase flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <CheckSquare className="h-4 w-4" />
+                  Divisi Pengamanan
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="text-4xl font-bold mb-4">
+                {stats.totalSecurity.toLocaleString()} <span className="text-sm font-normal opacity-75">Personil</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 bg-teal-600/50 p-3 rounded-lg text-sm">
+                <div>
+                  <div className="opacity-75 mb-1 flex items-center gap-1"><MapPin className="h-3 w-3"/> Lokasi Jakarta</div>
+                  <div className="font-bold text-xl">{stats.securityJakarta.toLocaleString()}</div>
+                </div>
+                <div>
+                  <div className="opacity-75 mb-1 flex items-center gap-1"><MapPin className="h-3 w-3"/> Lokasi Karawang</div>
+                  <div className="font-bold text-xl">{stats.securityKarawang.toLocaleString()}</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* TABEL REKAP PER-LINE (Membentang penuh di bawah) */}
+          <Card className="border-sky-100 shadow-sm md:col-span-2 w-full overflow-hidden mt-2">
+            <CardHeader className="border-b bg-slate-50/50 py-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Layers className="h-4 w-4 text-sky-500" />
+                Jumlah Hadir Per-Line Operasional
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="max-h-[400px] overflow-auto relative w-full">
+                <Table className="w-full min-w-[400px]">
+                  <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                    <TableRow>
+                      <TableHead className="font-semibold w-12 text-center text-xs md:text-sm whitespace-nowrap">No</TableHead>
+                      <TableHead className="font-semibold text-xs md:text-sm whitespace-nowrap">Area / Line</TableHead>
+                      <TableHead className="font-semibold text-right text-xs md:text-sm whitespace-nowrap">Jumlah Pegawai</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {stats.lineStats.map((line, i) => (
+                      <TableRow key={line.lineName} className="hover:bg-sky-50/30">
+                        <TableCell className="text-center text-muted-foreground text-xs md:text-sm">{i + 1}</TableCell>
+                        <TableCell className="font-medium text-slate-700 text-xs md:text-sm whitespace-nowrap">
+                          {line.lineName}
+                        </TableCell>
+                        <TableCell className="text-right text-sky-600 font-bold text-xs md:text-sm">
+                          {line.total.toLocaleString()}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+          
         </div>
-      </div>
+      )}
     </main>
   );
 }

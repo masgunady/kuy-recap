@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { processBiostarCsv } from "@/app/actions/bio-action";
+import { processFrCsv } from "@/app/actions/fr-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,7 +30,7 @@ type StatsType = {
   previewData: Record<string, string>[];
 };
 
-export default function BiostarPage() {
+export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [stats, setStats] = useState<StatsType | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -41,11 +41,13 @@ export default function BiostarPage() {
 
     setFileName(file.name);
 
+    // Persiapkan data file ke form-data untuk Server Action
     const formData = new FormData();
     formData.append("file", file);
 
+    // Jalankan Server Action
     startTransition(async () => {
-      const result = await processBiostarCsv(formData);
+      const result = await processFrCsv(formData);
 
       if (result.success) {
         setStats({
@@ -56,28 +58,28 @@ export default function BiostarPage() {
           previewData: result.previewData!,
         });
       } else {
-        console.error("Gagal memproses file Biostar", result.error);
+        console.error("Gagal memproses file", result.error);
         setFileName(null);
       }
     });
 
-    e.target.value = "";
+    e.target.value = ""; // Reset input
   };
 
   return (
     <main className="flex-1 space-y-6 md:space-y-8 p-4 md:p-8 pt-6 w-full max-w-7xl mx-auto overflow-x-hidden">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
-          Ri<span className="text-teal-500">Cap</span> (Biostar)
+          Ri<span className="text-cyan-500">Cap</span> (FR Mode)
         </h2>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-7 w-full">
+      <div className="grid gap-6 md:grid-cols-7">
         {/* INPUT SECTION */}
-        <Card className="md:col-span-3 border-teal-100 shadow-sm h-fit w-full">
+        <Card className="md:col-span-3 border-cyan-100 shadow-sm h-fit">
           <CardHeader className="pb-4">
             <CardTitle className="text-base md:text-lg">
-              Upload Data Absensi Tap Card
+              Upload Data Absensi FR
             </CardTitle>
             {fileName ? (
               <div>
@@ -109,20 +111,21 @@ export default function BiostarPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-sm">Pilih File Baru</Label>
-              <div className="group relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-teal-200 p-6 md:p-8 transition-colors hover:bg-teal-50/50 w-full min-h-[160px] text-center overflow-hidden">
+              <Label>File CSV</Label>
+              <div className="group relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-cyan-200 p-6 md:p-8 transition-colors hover:bg-cyan-50/50 w-full min-h-[160px] text-center overflow-hidden">
                 <div className="flex flex-col items-center justify-center pointer-events-none z-10">
                   {isPending ? (
-                    <Loader2 className="mb-2 h-8 w-8 text-teal-400 animate-spin" />
+                    <Loader2 className="mb-2 h-8 w-8 text-cyan-400 animate-spin" />
                   ) : (
-                    <UploadCloud className="mb-2 h-8 w-8 text-teal-400 group-hover:scale-110 transition-transform duration-200" />
+                    <UploadCloud className="mb-2 h-8 w-8 text-cyan-400 group-hover:scale-110 transition-transform duration-200" />
                   )}
-                  <p className="text-xs md:text-sm font-medium text-teal-600 text-center mt-2 px-2">
+                  <p className="text-xs md:text-sm font-medium text-cyan-600 text-center mt-2 px-2">
                     {isPending
                       ? "Sedang memproses di Server..."
-                      : "Klik atau Drop file Biostar (.csv)"}
+                      : "Klik atau Drop file FR (.csv)"}
                   </p>
                 </div>
+
                 <Input
                   type="file"
                   accept=".csv"
@@ -137,10 +140,10 @@ export default function BiostarPage() {
 
         {/* REKAP SECTION */}
         <div className="md:col-span-4 space-y-4 min-w-0 w-full">
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            <Card className="bg-teal-500 text-white shadow-sm w-full">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-xs md:text-sm font-semibold uppercase">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Card className="bg-cyan-500 text-white shadow-sm">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-semibold uppercase opacity-90">
                   Total Pegawai In/Masuk
                 </CardTitle>
                 <Users className="h-4 w-4 opacity-70" />
@@ -149,24 +152,24 @@ export default function BiostarPage() {
                 <div className="text-2xl md:text-3xl font-bold">
                   {stats ? stats.totalKaryawan.toLocaleString() : "0"} <span className="text-xl font-semibold">Pegawai</span>
                 </div>
-                <p className="text-[10px] md:text-xs mt-1">
-                  Setelah hapus anomali / duplikasi (Double Tap Entry)
+                <p className="text-xs mt-1">
+                  Setelah hapus anomali / duplikasi (Double FR Entry)
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="border-teal-100 shadow-sm w-full">
-              <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-xs md:text-sm font-semibold uppercase text-muted-foreground">
+            <Card className="border-cyan-100 shadow-sm">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm font-semibold uppercase text-muted-foreground">
                   Divisi Pengamanan
                 </CardTitle>
-                <CheckSquare className="h-4 w-4 text-teal-500" />
+                <CheckSquare className="h-4 w-4 text-cyan-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl md:text-3xl font-bold text-teal-600">
-                  {stats ? stats.totalKaryawanPengamanan.toLocaleString() : "0"} <span className="text-xl font-semibold">Personil</span>
+                <div className="text-3xl font-bold text-cyan-600">
+                    {stats ? stats.totalKaryawanPengamanan.toLocaleString() : "0"} <span className="text-xl font-semibold">Personil</span>
                 </div>
-                <p className="text-[10px] md:text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Sesuai Database G-Sheets
                 </p>
               </CardContent>
@@ -174,26 +177,26 @@ export default function BiostarPage() {
           </div>
 
           {/* TABEL REKAP PER-DOOR */}
-          <Card className="border-teal-100 shadow-sm w-full overflow-hidden">
+          <Card className="border-cyan-100 shadow-sm">
             <CardHeader className="border-b bg-slate-50/50 py-3">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <CheckSquare className="h-4 w-4 text-teal-500" />
-                Rekap Per-DOOR (Biostar)
+              <CardTitle className="text-xs flex items-center gap-2">
+                <CheckSquare className="h-4 w-4 text-cyan-500" />
+                Rekap Jumlah Karyawan Per-DOOR
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="max-h-[350px] overflow-auto relative w-full">
                 {stats && stats.doorStats.length > 0 ? (
-                  <Table className="w-full min-w-[300px]">
+                  <Table>
                     <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
                       <TableRow>
-                        <TableHead className="font-semibold w-12 text-center text-xs md:text-sm whitespace-nowrap">
+                        <TableHead className="text-xs font-semibold w-12 text-center">
                           No
                         </TableHead>
-                        <TableHead className="font-semibold text-xs md:text-sm whitespace-nowrap">
+                        <TableHead className="text-xs font-semibold">
                           Perangkat (DOOR)
                         </TableHead>
-                        <TableHead className="font-semibold text-right text-xs md:text-sm whitespace-nowrap">
+                        <TableHead className="text-xs font-semibold text-center">
                           Jumlah Karyawan
                         </TableHead>
                       </TableRow>
@@ -202,15 +205,15 @@ export default function BiostarPage() {
                       {stats.doorStats.map((door, i) => (
                         <TableRow
                           key={door.doorName}
-                          className="hover:bg-teal-50/30"
+                          className="hover:bg-cyan-50/30"
                         >
-                          <TableCell className="text-center text-muted-foreground text-xs md:text-sm">
+                          <TableCell className="text-xs text-center text-muted-foreground">
                             {i + 1}
                           </TableCell>
-                          <TableCell className="font-medium text-slate-700 text-xs md:text-sm whitespace-nowrap">
+                          <TableCell className="text-xs font-medium text-slate-700">
                             {door.doorName}
                           </TableCell>
-                          <TableCell className="text-right text-teal-600 font-bold text-xs md:text-sm">
+                          <TableCell className="text-xs text-center text-cyan-600 font-bold">
                             {door.total}
                           </TableCell>
                         </TableRow>
@@ -218,8 +221,8 @@ export default function BiostarPage() {
                     </TableBody>
                   </Table>
                 ) : (
-                  <div className="p-8 md:p-10 text-center text-muted-foreground italic text-xs md:text-sm">
-                    Silakan upload file untuk melihat data perangkat Biostar.
+                  <div className="p-10 text-center text-muted-foreground italic text-sm">
+                    Silakan upload file untuk melihat data perangkat.
                   </div>
                 )}
               </div>
