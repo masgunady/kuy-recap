@@ -13,6 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -31,10 +32,15 @@ export function Navbar() {
     <nav className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <div className={cn("h-8 w-8 rounded transition-colors duration-500", currentRoute.bg)} />
-          <span className="text-xl font-bold tracking-tight">
-            Ri<span className={cn("transition-colors duration-500", currentRoute.color)}>Cap</span>
-          </span>
+          <Image 
+            src="/logo.png" 
+            alt="RiCap Logo" 
+            width={0}
+            height={0}
+            sizes="100vw"
+            style={{ width: '110px', height: 'auto' }} // Mengunci lebar, tinggi auto
+            priority 
+          />
         </div>
 
         {/* 3. Hubungkan state 'open' ke Sheet */}

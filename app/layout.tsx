@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KuyReCap",
-  description: "Generated KuyReCap",
+  title: "Peruri Recap",
+  description: "Generated ReCap",
 };
 
 export default function RootLayout({
