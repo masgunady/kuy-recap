@@ -1,7 +1,7 @@
 "use server";
 
 import Papa from "papaparse";
-import { getSecurityNiks } from '@/lib/google-sheet'
+import { getSecurityNiks } from '@/lib/google-sheets'
 
 export async function processFrCsv(formData: FormData) {
   const file = formData.get("file") as File;
