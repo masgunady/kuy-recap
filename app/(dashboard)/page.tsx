@@ -1,10 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { processCombinedCsv } from "@/app/actions/cross-action"; 
+import { processCombinedCsv } from "@/app/actions/cross-action";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -13,7 +22,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, CheckSquare, Loader2, FileText, Layers, UploadCloud, MapPin } from "lucide-react";
+import {
+  Users,
+  CheckSquare,
+  Loader2,
+  FileText,
+  Layers,
+  UploadCloud,
+  MapPin,
+  Clock,
+} from "lucide-react";
 
 // Tipe data yang disesuaikan dengan output terbaru dari Server Action
 type CombinedStatsType = {
@@ -29,10 +47,11 @@ type CombinedStatsType = {
 export default function KonsolidasiPage() {
   const [isPending, startTransition] = useTransition();
   const [stats, setStats] = useState<CombinedStatsType | null>(null);
-  
+
   // State untuk menampung kedua file
   const [fileFr, setFileFr] = useState<File | null>(null);
   const [fileBiostar, setFileBiostar] = useState<File | null>(null);
+  const [shift, setShift] = useState<string>("semua");
 
   const handleProcess = () => {
     if (!fileFr || !fileBiostar) return;
@@ -40,10 +59,11 @@ export default function KonsolidasiPage() {
     const formData = new FormData();
     formData.append("fileFr", fileFr);
     formData.append("fileBiostar", fileBiostar);
+    formData.append("shift", shift);
 
     startTransition(async () => {
       const result = await processCombinedCsv(formData);
-      
+
       if (result.success && result.stats) {
         // Menyimpan seluruh object stats dari server
         setStats(result.stats);
@@ -67,23 +87,31 @@ export default function KonsolidasiPage() {
         <Card className="border-sky-100 shadow-sm w-full h-fit">
           <CardHeader className="pb-4">
             <CardTitle className="text-base md:text-lg flex items-center gap-2">
-              <span className="bg-cyan-100 text-cyan-700 px-2 py-1 rounded text-xs">Mesin 1</span>
+              <span className="bg-cyan-100 text-cyan-700 px-2 py-1 rounded text-xs">
+                Mesin 1
+              </span>
               Data Absensi FR
             </CardTitle>
             {fileFr ? (
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-sky-50 p-2 rounded-md border border-sky-100">
                 <FileText className="h-4 w-4 text-sky-500" />
-                <span className="truncate flex-1 font-medium text-slate-700">{fileFr.name}</span>
+                <span className="truncate flex-1 font-medium text-slate-700">
+                  {fileFr.name}
+                </span>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground mt-1">Belum ada file FR</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Belum ada file FR
+              </p>
             )}
           </CardHeader>
           <CardContent>
             <div className="group relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-sky-200 p-6 transition-colors hover:bg-sky-50/50 w-full min-h-[120px] text-center overflow-hidden">
               <div className="flex flex-col items-center justify-center pointer-events-none z-10">
                 <UploadCloud className="mb-2 h-6 w-6 text-sky-400 group-hover:scale-110 transition-transform duration-200" />
-                <p className="text-xs font-medium text-sky-600">Klik / Drop file FR (.csv)</p>
+                <p className="text-xs font-medium text-sky-600">
+                  Klik / Drop file FR (.csv)
+                </p>
               </div>
               <Input
                 type="file"
@@ -100,23 +128,31 @@ export default function KonsolidasiPage() {
         <Card className="border-sky-100 shadow-sm w-full h-fit">
           <CardHeader className="pb-4">
             <CardTitle className="text-base md:text-lg flex items-center gap-2">
-              <span className="bg-teal-100 text-teal-700 px-2 py-1 rounded text-xs">Mesin 2</span>
+              <span className="bg-teal-100 text-teal-700 px-2 py-1 rounded text-xs">
+                Mesin 2
+              </span>
               Data Absensi Biostar
             </CardTitle>
             {fileBiostar ? (
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground bg-sky-50 p-2 rounded-md border border-sky-100">
                 <FileText className="h-4 w-4 text-sky-500" />
-                <span className="truncate flex-1 font-medium text-slate-700">{fileBiostar.name}</span>
+                <span className="truncate flex-1 font-medium text-slate-700">
+                  {fileBiostar.name}
+                </span>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground mt-1">Belum ada file Biostar</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Belum ada file Biostar
+              </p>
             )}
           </CardHeader>
           <CardContent>
             <div className="group relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-sky-200 p-6 transition-colors hover:bg-sky-50/50 w-full min-h-[120px] text-center overflow-hidden">
               <div className="flex flex-col items-center justify-center pointer-events-none z-10">
                 <UploadCloud className="mb-2 h-6 w-6 text-sky-400 group-hover:scale-110 transition-transform duration-200" />
-                <p className="text-xs font-medium text-sky-600">Klik / Drop file Biostar (.csv)</p>
+                <p className="text-xs font-medium text-sky-600">
+                  Klik / Drop file Biostar (.csv)
+                </p>
               </div>
               <Input
                 type="file"
@@ -130,10 +166,40 @@ export default function KonsolidasiPage() {
         </Card>
       </div>
 
-      {/* TOMBOL PROSES */}
-      <div className="flex justify-center w-full my-6">
-        <Button 
-          onClick={handleProcess} 
+      {/* FILTER SHIFT & TOMBOL PROSES */}
+      <div className="flex flex-col items-center w-full my-6 p-6 bg-slate-50 border border-sky-100 rounded-xl shadow-sm">
+        <div className="w-full md:w-1/3 mb-6">
+          <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+            <Clock className="h-4 w-4 text-sky-500" />
+            Pilih Shift Rekapitulasi
+          </Label>
+          <Select
+            value={shift}
+            onValueChange={(val) => setShift(val)}
+            disabled={isPending}
+          >
+            <SelectTrigger className="w-full border-sky-200 bg-white">
+              <SelectValue placeholder="Pilih Shift" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="semua">
+                  Semua Shift (1 Hari Penuh)
+                </SelectItem>
+                <SelectItem value="pagi">Shift Pagi (05:00 - 12:59)</SelectItem>
+                <SelectItem value="siang">
+                  Shift Siang (13:00 - 20:59)
+                </SelectItem>
+                <SelectItem value="malam">
+                  Shift Malam (21:00 - 04:59)
+                </SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Button
+          onClick={handleProcess}
           disabled={!fileFr || !fileBiostar || isPending}
           size="lg"
           className="bg-sky-600 hover:bg-sky-700 text-white w-full md:w-1/3 shadow-md h-12 text-md"
@@ -146,7 +212,8 @@ export default function KonsolidasiPage() {
           ) : (
             <>
               <Layers className="mr-2 h-5 w-5" />
-              Proses Rekap Data
+              Proses Rekap{" "}
+              {shift === "semua" ? "Harian" : `Shift ${shift.toUpperCase()}`}
             </>
           )}
         </Button>
@@ -155,29 +222,37 @@ export default function KonsolidasiPage() {
       {/* AREA HASIL REKAPITULASI */}
       {stats && (
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          
           {/* CARD 1: TOTAL SELURUH KARYAWAN */}
           <Card className="bg-cyan-500 text-white shadow-sm w-full">
             <CardHeader className="pb-2 border-b border-cyan-400/30">
               <CardTitle className="text-sm font-semibold uppercase flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Total Pegawai In/Masuk
+                  Total Pegawai In/Masuk {shift !== "semua" && `(${shift})`}
                 </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="text-4xl font-bold mb-4">
-                {stats.totalHadir.toLocaleString()} <span className="text-sm font-normal opacity-75">Orang</span>
+                {stats.totalHadir.toLocaleString()}{" "}
+                <span className="text-sm font-normal opacity-75">Orang</span>
               </div>
               <div className="grid grid-cols-2 gap-4 bg-cyan-600/50 p-3 rounded-lg text-sm">
                 <div>
-                  <div className="opacity-75 mb-1 flex items-center gap-1"><MapPin className="h-3 w-3"/> Lokasi Jakarta</div>
-                  <div className="font-bold text-xl">{stats.hadirJakarta.toLocaleString()}</div>
+                  <div className="opacity-75 mb-1 flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> Lokasi Jakarta
+                  </div>
+                  <div className="font-bold text-xl">
+                    {stats.hadirJakarta.toLocaleString()}
+                  </div>
                 </div>
                 <div>
-                  <div className="opacity-75 mb-1 flex items-center gap-1"><MapPin className="h-3 w-3"/> Lokasi Karawang</div>
-                  <div className="font-bold text-xl">{stats.hadirKarawang.toLocaleString()}</div>
+                  <div className="opacity-75 mb-1 flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> Lokasi Karawang
+                  </div>
+                  <div className="font-bold text-xl">
+                    {stats.hadirKarawang.toLocaleString()}
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -189,22 +264,31 @@ export default function KonsolidasiPage() {
               <CardTitle className="text-sm font-semibold uppercase flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <CheckSquare className="h-4 w-4" />
-                  Divisi Pengamanan
+                  Divisi Pengamanan {shift !== "semua" && `(${shift})`}
                 </span>
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="text-4xl font-bold mb-4">
-                {stats.totalSecurity.toLocaleString()} <span className="text-sm font-normal opacity-75">Personil</span>
+                {stats.totalSecurity.toLocaleString()}{" "}
+                <span className="text-sm font-normal opacity-75">Personil</span>
               </div>
               <div className="grid grid-cols-2 gap-4 bg-teal-600/50 p-3 rounded-lg text-sm">
                 <div>
-                  <div className="opacity-75 mb-1 flex items-center gap-1"><MapPin className="h-3 w-3"/> Lokasi Jakarta</div>
-                  <div className="font-bold text-xl">{stats.securityJakarta.toLocaleString()}</div>
+                  <div className="opacity-75 mb-1 flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> Lokasi Jakarta
+                  </div>
+                  <div className="font-bold text-xl">
+                    {stats.securityJakarta.toLocaleString()}
+                  </div>
                 </div>
                 <div>
-                  <div className="opacity-75 mb-1 flex items-center gap-1"><MapPin className="h-3 w-3"/> Lokasi Karawang</div>
-                  <div className="font-bold text-xl">{stats.securityKarawang.toLocaleString()}</div>
+                  <div className="opacity-75 mb-1 flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> Lokasi Karawang
+                  </div>
+                  <div className="font-bold text-xl">
+                    {stats.securityKarawang.toLocaleString()}
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -215,7 +299,8 @@ export default function KonsolidasiPage() {
             <CardHeader className="border-b bg-slate-50/50 py-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Layers className="h-4 w-4 text-sky-500" />
-                Jumlah Hadir Per-Line Operasional
+                Jumlah Hadir Per-Line Operasional{" "}
+                {shift !== "semua" && `- Shift ${shift.toUpperCase()}`}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -223,15 +308,26 @@ export default function KonsolidasiPage() {
                 <Table className="w-full min-w-[400px]">
                   <TableHeader className="bg-slate-50 sticky top-0 z-10 shadow-sm">
                     <TableRow>
-                      <TableHead className="font-semibold w-12 text-center text-xs md:text-sm whitespace-nowrap">No</TableHead>
-                      <TableHead className="font-semibold text-xs md:text-sm whitespace-nowrap">Area / Line</TableHead>
-                      <TableHead className="font-semibold text-right text-xs md:text-sm whitespace-nowrap">Jumlah Pegawai</TableHead>
+                      <TableHead className="font-semibold w-12 text-center text-xs md:text-sm whitespace-nowrap">
+                        No
+                      </TableHead>
+                      <TableHead className="font-semibold text-xs md:text-sm whitespace-nowrap">
+                        Area / Line
+                      </TableHead>
+                      <TableHead className="font-semibold text-right text-xs md:text-sm whitespace-nowrap">
+                        Jumlah Pegawai
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {stats.lineStats.map((line, i) => (
-                      <TableRow key={line.lineName} className="hover:bg-sky-50/30">
-                        <TableCell className="text-center text-muted-foreground text-xs md:text-sm">{i + 1}</TableCell>
+                      <TableRow
+                        key={line.lineName}
+                        className="hover:bg-sky-50/30"
+                      >
+                        <TableCell className="text-center text-muted-foreground text-xs md:text-sm">
+                          {i + 1}
+                        </TableCell>
                         <TableCell className="font-medium text-slate-700 text-xs md:text-sm whitespace-nowrap">
                           {line.lineName}
                         </TableCell>
@@ -245,7 +341,6 @@ export default function KonsolidasiPage() {
               </div>
             </CardContent>
           </Card>
-          
         </div>
       )}
     </main>
