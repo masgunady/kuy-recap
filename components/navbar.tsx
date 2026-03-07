@@ -20,9 +20,24 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
 
   const routes = [
-    { href: "/", label: "Cross System Mode", color: "text-sky-400", bg: "bg-sky-400" },
-    { href: "/biostar", label: "Biostar Mode", color: "text-teal-500", bg: "bg-teal-500" },
-    { href: "/fr", label: "FR Mode", color: "text-cyan-400", bg: "bg-cyan-400" },
+    {
+      href: "/",
+      label: "Cross System Mode",
+      color: "text-sky-400",
+      bg: "bg-sky-400",
+    },
+    {
+      href: "/biostar",
+      label: "Biostar Mode",
+      color: "text-teal-500",
+      bg: "bg-teal-500",
+    },
+    {
+      href: "/fr",
+      label: "FR Mode",
+      color: "text-cyan-400",
+      bg: "bg-cyan-400",
+    },
   ];
 
   const currentRoute = routes.find((r) => r.href === pathname) || routes[0];
@@ -32,14 +47,14 @@ export function Navbar() {
     <nav className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <Image 
-            src="/logo.png" 
-            alt="RiCap Logo" 
+          <Image
+            src="/apps-logo.png"
+            alt="RiCap Logo"
             width={0}
             height={0}
             sizes="100vw"
-            style={{ width: '110px', height: 'auto' }} // Mengunci lebar, tinggi auto
-            priority 
+            style={{ width: "110px", height: "auto" }} // Mengunci lebar, tinggi auto
+            priority
           />
         </div>
 
@@ -64,7 +79,7 @@ export function Navbar() {
                   className={cn(
                     "flex items-center gap-3 px-4 py-3 rounded-lg border transition-all hover:bg-slate-50",
                     route.color,
-                    "border-slate-100 font-semibold"
+                    "border-slate-100 font-semibold",
                   )}
                 >
                   <div className={cn("h-3 w-3 rounded-full", route.bg)} />
