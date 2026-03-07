@@ -24,6 +24,7 @@ import {
   MapPin,
   Clock,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 
 type CombinedStatsType = {
@@ -47,7 +48,6 @@ export default function KonsolidasiPage() {
   const [startTime, setStartTime] = useState<string>("00:00");
   const [endTime, setEndTime] = useState<string>("23:59");
 
-  // Menyimpan label waktu aktif yang dirender setelah tombol ditekan
   const [activeRangeLabel, setActiveRangeLabel] = useState<string>("");
 
   const handleProcess = () => {
@@ -64,7 +64,6 @@ export default function KonsolidasiPage() {
 
       if (result.success && result.stats) {
         setStats(result.stats);
-        // Set label agar UI tahu rentang apa yang sedang ditampilkan
         setActiveRangeLabel(`${startTime} s/d ${endTime}`);
       } else {
         console.error("Gagal memproses file gabungan", result.error);
@@ -82,7 +81,7 @@ export default function KonsolidasiPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 w-full">
-        {/* INPUT FILE FR (TETAP SAMA) */}
+        {/* INPUT FILE FR */}
         <Card className="border-sky-100 shadow-sm w-full h-fit">
           <CardHeader className="pb-4">
             <CardTitle className="text-base md:text-lg flex items-center gap-2">
@@ -123,7 +122,7 @@ export default function KonsolidasiPage() {
           </CardContent>
         </Card>
 
-        {/* INPUT FILE BIOSTAR (TETAP SAMA) */}
+        {/* INPUT FILE BIOSTAR */}
         <Card className="border-sky-100 shadow-sm w-full h-fit">
           <CardHeader className="pb-4">
             <CardTitle className="text-base md:text-lg flex items-center gap-2">
@@ -166,12 +165,19 @@ export default function KonsolidasiPage() {
       </div>
 
       {/* RENTANG WAKTU KUSTOM & TOMBOL PROSES */}
-      <div className="flex flex-col items-center w-full my-6 p-6 bg-slate-50 border border-sky-100 rounded-xl shadow-sm">
+      <div className="relative flex flex-col items-center w-full my-6 p-6 bg-slate-50 border border-sky-100 rounded-xl shadow-sm">
+        <span className="h-6 absolute right-[-4] top-[-4] flex items-center gap-1 bg-violet-100 text-violet-600 border border-violet-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+          <Sparkles className="h-3 w-3" />
+          New Feature
+        </span>
         <div className="w-full md:w-1/2 mb-6">
-          <Label className="text-sm font-semibold flex items-center gap-2 mb-3 justify-center">
-            <Clock className="h-4 w-4 text-sky-500" />
-            Tentukan Rentang Waktu Ricap
-          </Label>
+          {/* LABEL DENGAN TAG NEW FEATURE */}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Label className="text-sm font-semibold flex items-center gap-2">
+              <Clock className="h-4 w-4 text-sky-500" />
+              Tentukan Rentang Waktu Ricap
+            </Label>
+          </div>
 
           <div className="flex items-center justify-center gap-4">
             <div className="flex-1">
@@ -183,7 +189,7 @@ export default function KonsolidasiPage() {
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 disabled={isPending}
-                className="text-center bg-white cursor-pointer"
+                className="text-center bg-white border-sky-200 focus-visible:ring-sky-500"
               />
             </div>
             <ArrowRight className="h-5 w-5 text-slate-400 mt-5" />
@@ -196,7 +202,7 @@ export default function KonsolidasiPage() {
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
                 disabled={isPending}
-                className="text-center bg-white cursor-pointer"
+                className="text-center bg-white border-sky-200 focus-visible:ring-sky-500"
               />
             </div>
           </div>
@@ -208,7 +214,7 @@ export default function KonsolidasiPage() {
             !fileFr || !fileBiostar || !startTime || !endTime || isPending
           }
           size="lg"
-          className="bg-sky-600 hover:bg-sky-700 text-white w-full md:w-1/3 shadow-md h-12 text-md cursor-pointer"
+          className="bg-sky-600 hover:bg-sky-700 text-white w-full md:w-1/3 shadow-md h-12 text-md transition-all"
         >
           {isPending ? (
             <>
@@ -235,7 +241,7 @@ export default function KonsolidasiPage() {
                   <Users className="h-4 w-4" />
                   Total Pegawai In/Masuk
                 </span>
-                <span className="text-[10px] bg-cyan-700 px-2 py-1 rounded opacity-90">
+                <span className="text-[10px] bg-cyan-700 px-2 py-1 rounded opacity-90 border border-cyan-600">
                   {activeRangeLabel}
                 </span>
               </CardTitle>
@@ -274,7 +280,7 @@ export default function KonsolidasiPage() {
                   <CheckSquare className="h-4 w-4" />
                   Divisi Pengamanan
                 </span>
-                <span className="text-[10px] bg-teal-700 px-2 py-1 rounded opacity-90">
+                <span className="text-[10px] bg-teal-700 px-2 py-1 rounded opacity-90 border border-teal-600">
                   {activeRangeLabel}
                 </span>
               </CardTitle>
