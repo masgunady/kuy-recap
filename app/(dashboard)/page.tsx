@@ -7,14 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -31,9 +23,9 @@ import {
   UploadCloud,
   MapPin,
   Clock,
+  ArrowRight,
 } from "lucide-react";
 
-// Tipe data yang disesuaikan dengan output terbaru dari Server Action
 type CombinedStatsType = {
   totalHadir: number;
   hadirJakarta: number;
@@ -48,10 +40,15 @@ export default function KonsolidasiPage() {
   const [isPending, startTransition] = useTransition();
   const [stats, setStats] = useState<CombinedStatsType | null>(null);
 
-  // State untuk menampung kedua file
   const [fileFr, setFileFr] = useState<File | null>(null);
   const [fileBiostar, setFileBiostar] = useState<File | null>(null);
-  const [shift, setShift] = useState<string>("semua");
+
+  // STATE BARU UNTUK RENTANG WAKTU (Default Seharian Penuh)
+  const [startTime, setStartTime] = useState<string>("00:00");
+  const [endTime, setEndTime] = useState<string>("23:59");
+
+  // Menyimpan label waktu aktif yang dirender setelah tombol ditekan
+  const [activeRangeLabel, setActiveRangeLabel] = useState<string>("");
 
   const handleProcess = () => {
     if (!fileFr || !fileBiostar) return;
@@ -59,14 +56,16 @@ export default function KonsolidasiPage() {
     const formData = new FormData();
     formData.append("fileFr", fileFr);
     formData.append("fileBiostar", fileBiostar);
-    formData.append("shift", shift);
+    formData.append("startTime", startTime);
+    formData.append("endTime", endTime);
 
     startTransition(async () => {
       const result = await processCombinedCsv(formData);
 
       if (result.success && result.stats) {
-        // Menyimpan seluruh object stats dari server
         setStats(result.stats);
+        // Set label agar UI tahu rentang apa yang sedang ditampilkan
+        setActiveRangeLabel(`${startTime} s/d ${endTime}`);
       } else {
         console.error("Gagal memproses file gabungan", result.error);
         alert(result.error || "Terjadi kesalahan saat memproses data.");
@@ -83,7 +82,7 @@ export default function KonsolidasiPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 w-full">
-        {/* INPUT: FILE FR */}
+        {/* INPUT FILE FR (TETAP SAMA) */}
         <Card className="border-sky-100 shadow-sm w-full h-fit">
           <CardHeader className="pb-4">
             <CardTitle className="text-base md:text-lg flex items-center gap-2">
@@ -124,7 +123,7 @@ export default function KonsolidasiPage() {
           </CardContent>
         </Card>
 
-        {/* INPUT: FILE BIOSTAR */}
+        {/* INPUT FILE BIOSTAR (TETAP SAMA) */}
         <Card className="border-sky-100 shadow-sm w-full h-fit">
           <CardHeader className="pb-4">
             <CardTitle className="text-base md:text-lg flex items-center gap-2">
@@ -166,43 +165,50 @@ export default function KonsolidasiPage() {
         </Card>
       </div>
 
-      {/* FILTER SHIFT & TOMBOL PROSES */}
+      {/* RENTANG WAKTU KUSTOM & TOMBOL PROSES */}
       <div className="flex flex-col items-center w-full my-6 p-6 bg-slate-50 border border-sky-100 rounded-xl shadow-sm">
-        <div className="w-full md:w-1/3 mb-6">
-          <Label className="text-sm font-semibold flex items-center gap-2 mb-2">
+        <div className="w-full md:w-1/2 mb-6">
+          <Label className="text-sm font-semibold flex items-center gap-2 mb-3 justify-center">
             <Clock className="h-4 w-4 text-sky-500" />
-            Pilih Shift Rekapitulasi
+            Tentukan Rentang Waktu Ricap
           </Label>
-          <Select
-            value={shift}
-            onValueChange={(val) => setShift(val)}
-            disabled={isPending}
-          >
-            <SelectTrigger className="w-full border-sky-200 bg-white">
-              <SelectValue placeholder="Pilih Shift" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="semua">
-                  Semua Shift (1 Hari Penuh)
-                </SelectItem>
-                <SelectItem value="pagi">Shift Pagi (05:00 - 12:59)</SelectItem>
-                <SelectItem value="siang">
-                  Shift Siang (13:00 - 20:59)
-                </SelectItem>
-                <SelectItem value="malam">
-                  Shift Malam (21:00 - 04:59)
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+
+          <div className="flex items-center justify-center gap-4">
+            <div className="flex-1">
+              <Label className="text-xs text-muted-foreground mb-1 block text-center">
+                Dari Jam
+              </Label>
+              <Input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                disabled={isPending}
+                className="text-center bg-white cursor-pointer"
+              />
+            </div>
+            <ArrowRight className="h-5 w-5 text-slate-400 mt-5" />
+            <div className="flex-1">
+              <Label className="text-xs text-muted-foreground mb-1 block text-center">
+                Sampai Jam
+              </Label>
+              <Input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                disabled={isPending}
+                className="text-center bg-white cursor-pointer"
+              />
+            </div>
+          </div>
         </div>
 
         <Button
           onClick={handleProcess}
-          disabled={!fileFr || !fileBiostar || isPending}
+          disabled={
+            !fileFr || !fileBiostar || !startTime || !endTime || isPending
+          }
           size="lg"
-          className="bg-sky-600 hover:bg-sky-700 text-white w-full md:w-1/3 shadow-md h-12 text-md"
+          className="bg-sky-600 hover:bg-sky-700 text-white w-full md:w-1/3 shadow-md h-12 text-md cursor-pointer"
         >
           {isPending ? (
             <>
@@ -212,8 +218,7 @@ export default function KonsolidasiPage() {
           ) : (
             <>
               <Layers className="mr-2 h-5 w-5" />
-              Proses Rekap{" "}
-              {shift === "semua" ? "Harian" : `Shift ${shift.toUpperCase()}`}
+              Proses Rekap Waktu
             </>
           )}
         </Button>
@@ -228,7 +233,10 @@ export default function KonsolidasiPage() {
               <CardTitle className="text-sm font-semibold uppercase flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Total Pegawai In/Masuk {shift !== "semua" && `(${shift})`}
+                  Total Pegawai In/Masuk
+                </span>
+                <span className="text-[10px] bg-cyan-700 px-2 py-1 rounded opacity-90">
+                  {activeRangeLabel}
                 </span>
               </CardTitle>
             </CardHeader>
@@ -240,7 +248,7 @@ export default function KonsolidasiPage() {
               <div className="grid grid-cols-2 gap-4 bg-cyan-600/50 p-3 rounded-lg text-sm">
                 <div>
                   <div className="opacity-75 mb-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Lokasi Jakarta
+                    <MapPin className="h-3 w-3" /> Jakarta
                   </div>
                   <div className="font-bold text-xl">
                     {stats.hadirJakarta.toLocaleString()}
@@ -248,7 +256,7 @@ export default function KonsolidasiPage() {
                 </div>
                 <div>
                   <div className="opacity-75 mb-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Lokasi Karawang
+                    <MapPin className="h-3 w-3" /> Karawang
                   </div>
                   <div className="font-bold text-xl">
                     {stats.hadirKarawang.toLocaleString()}
@@ -264,7 +272,10 @@ export default function KonsolidasiPage() {
               <CardTitle className="text-sm font-semibold uppercase flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <CheckSquare className="h-4 w-4" />
-                  Divisi Pengamanan {shift !== "semua" && `(${shift})`}
+                  Divisi Pengamanan
+                </span>
+                <span className="text-[10px] bg-teal-700 px-2 py-1 rounded opacity-90">
+                  {activeRangeLabel}
                 </span>
               </CardTitle>
             </CardHeader>
@@ -276,7 +287,7 @@ export default function KonsolidasiPage() {
               <div className="grid grid-cols-2 gap-4 bg-teal-600/50 p-3 rounded-lg text-sm">
                 <div>
                   <div className="opacity-75 mb-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Lokasi Jakarta
+                    <MapPin className="h-3 w-3" /> Jakarta
                   </div>
                   <div className="font-bold text-xl">
                     {stats.securityJakarta.toLocaleString()}
@@ -284,7 +295,7 @@ export default function KonsolidasiPage() {
                 </div>
                 <div>
                   <div className="opacity-75 mb-1 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" /> Lokasi Karawang
+                    <MapPin className="h-3 w-3" /> Karawang
                   </div>
                   <div className="font-bold text-xl">
                     {stats.securityKarawang.toLocaleString()}
@@ -294,13 +305,12 @@ export default function KonsolidasiPage() {
             </CardContent>
           </Card>
 
-          {/* TABEL REKAP PER-LINE (Membentang penuh di bawah) */}
+          {/* TABEL REKAP PER-LINE */}
           <Card className="border-sky-100 shadow-sm md:col-span-2 w-full overflow-hidden mt-2">
             <CardHeader className="border-b bg-slate-50/50 py-3">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Layers className="h-4 w-4 text-sky-500" />
-                Jumlah Hadir Per-Line Operasional{" "}
-                {shift !== "semua" && `- Shift ${shift.toUpperCase()}`}
+                Jumlah Hadir Per-Line Operasional (Waktu: {activeRangeLabel})
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
